@@ -1,0 +1,34 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
+    hooks:
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: no-package-json
+        name: "block package.json / node_modules (see AGENT.md: no dependencies)"
+        entry: >-
+          bash -c 'echo "This project has no dependencies by design (see
+          AGENT.md). Do not add package.json, package-lock.json, or
+          node_modules." && exit 1'
+        language: system
+        files: '^(package(-lock)?\.json|node_modules/)'
+
+      - id: js-syntax
+        name: node --check (background.js + all .mjs files)
+        entry: scripts/check-js-syntax.sh
+        language: system
+        pass_filenames: false
+        files: '\.m?js$'
+
+      - id: node-test
+        name: node --test
+        entry: node --test
+        language: system
+        pass_filenames: false
+        files: '\.m?js$'

@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Untracked",
+  "version": "1.0.0",
+  "description": "Silently strips tracking query parameters from URLs before a page loads.",
+  "permissions": ["webNavigation", "webRequest", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}
