@@ -1,6 +1,6 @@
 export default [
   {
-    files: ["background.js"],
+    files: ["**/background.js"],
     languageOptions: {
       globals: {
         chrome: "readonly",
