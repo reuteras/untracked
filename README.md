@@ -13,7 +13,7 @@ parameters never reach the destination server.
 
 Example:
 
-```
+```text
 https://example.com?utm_source=newsletter&page=1
 → https://example.com?page=1
 ```

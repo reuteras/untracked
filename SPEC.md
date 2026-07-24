@@ -26,7 +26,7 @@
 
 ## Extension Structure
 
-```
+```text
 untracked/
 ├── manifest.json
 ├── background.js
@@ -67,7 +67,7 @@ No build step. No `node_modules`. Load unpacked directly.
 The initial strip list, grouped by origin:
 
 | Parameter | Source |
-|---|---|
+| --------- | ------ |
 | `utm_source` | Google Analytics |
 | `utm_medium` | Google Analytics |
 | `utm_campaign` | Google Analytics |
@@ -92,6 +92,7 @@ The initial strip list, grouped by origin:
 Additionally: any parameter matching the pattern `utm_*` is stripped as a wildcard catch-all.
 
 Parameters deliberately **excluded** from the strip list in v1:
+
 - `ref` — too commonly used for legitimate internal routing (GitHub, Hacker News, etc.)
 - `source` — same reason
 
@@ -120,7 +121,7 @@ The extension processes URLs from arbitrary, untrusted sites, including ones des
 ### Edge cases
 
 | Scenario | Handling |
-|---|---|
+| -------- | -------- |
 | URL has no query string | Skip immediately, no-op |
 | Fragment (`#`) present | Preserve as-is |
 | Duplicate params | All instances removed |
@@ -134,7 +135,7 @@ The extension processes URLs from arbitrary, untrusted sites, including ones des
 ## Permissions Rationale
 
 | Permission | Reason |
-|---|---|
+| ---------- | ------ |
 | `webNavigation` | Required to intercept navigation events before load |
 | `webRequest` | Required to observe server-side redirects (e.g. newsletter link trackers) before the browser follows them; observation only, no blocking |
 | `tabs` | Required to redirect the tab to the cleaned URL |
