@@ -22,4 +22,3 @@ toolbar button, similar to Privacy Badger's per-site switch.
       note the "No persistent storage... no access to page content"
       line under "Permissions Rationale" will need to change
 - [ ] Update `AGENT.md`'s out-of-scope list and `README.md`
-
