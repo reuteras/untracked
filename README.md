@@ -31,6 +31,44 @@ are left untouched.
 That's it — no build step, no dependencies. To pick up code changes,
 click the refresh icon on the extension's card in `vivaldi://extensions`.
 
+## iPhone equivalent (Shortcuts app)
+
+iOS Safari doesn't support extensions that rewrite a URL before the page
+loads, so there's no direct port of Untracked. You can get close with a
+Shortcut invoked from the Share Sheet — but note the important caveat:
+**the cleanup happens after you've already opened the page**, since
+Shortcuts can only act on a URL you hand it, not intercept navigation
+before it happens. In most cases this means the tracking parameters do
+reach the destination server; the shortcut just gives you a clean link
+to re-share or save afterward.
+
+1. Open the **Shortcuts** app and create a new shortcut.
+2. Add **Receive Apps and URLs from Share Sheet**. Under "If there's no
+   input", set it to **Stop and Respond** with something like "No URL".
+3. Add a **Replace Text** action with **Regular Expression** enabled:
+   - Find: `([?&])(utm_[^=]*|fbclid|gclid|gclsrc|msclkid|twclid|mc_cid|mc_eid|_ga|_gl|igshid|li_fat_id|ttclid)=[^&]*`
+   - Replace: `$1`
+   - Input: **Shortcut Input**
+4. Add another **Replace Text** action (regex enabled), taking the
+   previous step's **Updated Text** as input:
+   - Find: `[?&]+$`
+   - Replace: *(leave empty)*
+5. Add another **Replace Text** action (regex enabled), again on the
+   previous **Updated Text**, to collapse a leftover `?&` into `?`:
+   - Find: `\?&`
+   - Replace: `?`
+6. Add an **Open URL** action with the cleaned result — for example
+   `readwise://reader/add?url=[Replace Text Result]` to send it straight
+   to Readwise Reader, or just use the **Updated Text** value directly to
+   reopen the cleaned link in Safari.
+7. In the shortcut's settings (the ⓘ icon), enable **Show in Share
+   Sheet** so it's offered whenever you share a URL from Safari or
+   another app.
+
+Since the cleanup runs after the page has already been visited, treat
+this as a way to produce a clean link for sharing or saving — not a
+substitute for the extension's before-load stripping.
+
 ## Adding custom tracking parameters
 
 Open `strip.mjs` and add the parameter name to the `TRACKED_PARAMS` list:
