@@ -69,6 +69,10 @@ Since the cleanup runs after the page has already been visited, treat
 this as a way to produce a clean link for sharing or saving — not a
 substitute for the extension's before-load stripping.
 
+Below is a screenshot of my shortcut:
+
+![Example shortcut](./images/iPhone.png)
+
 ## Adding custom tracking parameters
 
 Open `strip.mjs` and add the parameter name to the `TRACKED_PARAMS` list:
