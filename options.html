@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Untracked — Excluded sites</title>
+  <style>
+    body {
+      font: 14px system-ui, sans-serif;
+      max-width: 32rem;
+      margin: 2rem auto;
+      color: #1a1a1a;
+    }
+    h1 {
+      font-size: 1.1rem;
+    }
+    p.hint {
+      color: #555;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #ddd;
+    }
+    button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Untracked — excluded sites</h1>
+  <p class="hint">
+    Stripping is disabled for these hostnames. Click the toolbar icon on a
+    site to add or remove it here.
+  </p>
+  <div id="hostnames"></div>
+  <script type="module" src="options.mjs"></script>
+</body>
+</html>

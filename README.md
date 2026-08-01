@@ -21,6 +21,25 @@ https://example.com?utm_source=newsletter&page=1
 Non-tracking parameters, fragments (`#section`), and the rest of the URL
 are left untouched.
 
+## Disabling it on a specific site
+
+Some sites break when their tracking params are stripped — marketing
+redirect links (e.g. Eloqua's `.../e/er?...utm_campaign=...`) sometimes
+validate the redirect against the full original query string, so removing
+`utm_*` params makes the link fail instead of just landing on a cleaner
+URL.
+
+Click the Untracked icon in the toolbar to toggle stripping for the
+current tab's hostname. The icon's badge always shows the state for the
+tab you're on: green **ON** when active, red **OFF** when you've disabled
+it for that site. The choice is remembered (per exact hostname, not the
+whole site) across browser restarts.
+
+To see every site you've excluded, or to re-enable one without
+revisiting it: right-click the toolbar icon and choose **Options** (or
+open the extension's card in `vivaldi://extensions` and click **Extension
+options**).
+
 ## Install in Vivaldi
 
 1. Clone or download this repository.
@@ -124,7 +143,8 @@ Considerations" in `SPEC.md` for the full threat model.
 
 ## What it doesn't do (v1)
 
-- No options/settings page
+- No options/settings page (the per-site toggle above is a single toolbar
+  button, not a configuration UI)
 - No cookie or localStorage cleanup
 - No network request or tracking-pixel blocking
 - No Firefox support
