@@ -291,7 +291,6 @@ suite can't exercise the actual `chrome.*` redirect behavior):
 - **Firefox support** — likely trivial; manifest adjustments only
 - **`declarativeNetRequest` migration** — avoids the double-navigation; blocked in v1 by the difficulty of expressing wildcard param matching in static rules
 - **`ref` param** — opt-in stripping with a domain allowlist
-- **Extension store publishing** — detailed checklist in `TODO.md`
 
 ---
 
