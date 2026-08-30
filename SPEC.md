@@ -296,30 +296,9 @@ suite can't exercise the actual `chrome.*` redirect behavior):
 
 ## Development Setup
 
-```bash
-git clone https://github.com/<you>/untracked
-# No install step needed
+See README's "Install in Vivaldi" section. No build step or install needed — clone and load unpacked.
 
-# Load in Vivaldi:
-# 1. Navigate to vivaldi://extensions
-# 2. Enable Developer mode
-# 3. Click "Load unpacked" → select the repo root
-```
-
-To reload after changes: click the refresh icon on the extension card in `vivaldi://extensions`.
-
----
-
-## Implementation Notes for Claude Code
-
-- **Icons:** Pre-generated PNGs are included in `icons/` — do not regenerate them
-- **README:** Write a brief user-facing README covering: what it does, how to install in Vivaldi, and how to add custom params to the strip list
-- **Definition of done:** Extension loads unpacked in Vivaldi/Chrome without console errors and correctly strips UTM params from a test URL such as `https://example.com?utm_source=test&page=1` → `https://example.com?page=1`
-- **No dependencies:** Do not introduce a `package.json`, bundler, or any npm packages — the extension must remain plain JS, loadable directly. `strip.mjs` uses the `.mjs` extension specifically so both the browser (MV3 module service worker) and Node's test runner treat it as an ES module without needing a `package.json`
-- **No TypeScript:** Plain JavaScript only for v1
-- **Service worker scope:** `background.js` only handles registering listeners and calling `chrome.*` APIs (`tabs.update`, `storage.local`, `action.set*`) — the pure logic lives in `strip.mjs`, `redirect-guard.mjs`, and `domain-list.mjs`, not here
-- **CI:** GitHub Actions pins third-party actions to a commit SHA (not a movable tag), per the supply-chain philosophy — see `.github/workflows/ci.yml`
-- **Coding style:** Prefer clarity over cleverness; this codebase may be maintained by non-JS-experts
+For AI-agent-facing constraints (no dependencies, no TypeScript, service worker scope, coding style, CI conventions), see `AGENT.md`.
 
 ---
 
