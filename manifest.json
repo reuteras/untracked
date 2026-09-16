@@ -1,26 +1,32 @@
 {
-  "manifest_version": 3,
-  "name": "Untracked",
-  "version": "1.2.0",
-  "description": "Silently strips tracking query parameters from URLs before a page loads.",
-  "permissions": ["webNavigation", "webRequest", "storage"],
-  "host_permissions": ["<all_urls>"],
-  "background": {
-    "service_worker": "background.js",
-    "type": "module"
-  },
-  "options_page": "options.html",
-  "action": {
-    "default_icon": {
-      "16": "icons/icon-16.png",
-      "48": "icons/icon-48.png",
-      "128": "icons/icon-128.png"
+    "manifest_version": 3,
+    "name": "Untracked",
+    "version": "1.3.0",
+    "description": "Silently strips tracking query parameters from URLs before a page loads.",
+    "permissions": [
+        "webNavigation",
+        "webRequest",
+        "storage"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
     },
-    "default_title": "Untracked — click to toggle stripping for this site"
-  },
-  "icons": {
-    "16": "icons/icon-16.png",
-    "48": "icons/icon-48.png",
-    "128": "icons/icon-128.png"
-  }
+    "options_page": "options.html",
+    "action": {
+        "default_icon": {
+            "16": "icons/icon-16.png",
+            "48": "icons/icon-48.png",
+            "128": "icons/icon-128.png"
+        },
+        "default_title": "Untracked — click to toggle stripping for this site"
+    },
+    "icons": {
+        "16": "icons/icon-16.png",
+        "48": "icons/icon-48.png",
+        "128": "icons/icon-128.png"
+    }
 }
