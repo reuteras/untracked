@@ -17,8 +17,9 @@ See `SPEC.md` for the full specification — read it before making changes.
   version is proposed — and pre-commit itself) is fine since none of it
   touches the extension's own dependency graph — just don't let it
   become an excuse to add an npm devDependency. `.pre-commit-config.yaml`
-  enforces this: it blocks any commit that adds `package.json`,
-  `package-lock.json`, or `node_modules/`.
+  enforces this: it blocks any commit that adds `package.json`, any npm /
+  pnpm / yarn / bun / deno lockfile or manifest, or `node_modules/`, at
+  any depth in the tree.
 - **No TypeScript.** Plain JS for v1.
 - **No build step.** Files run as-is in the browser. `strip.mjs` uses the
   `.mjs` extension (not `package.json`'s `"type": "module"`) so it's ESM
@@ -35,9 +36,15 @@ See `SPEC.md` for the full specification — read it before making changes.
   open internet, including sites an attacker controls. Don't add
   regex-based URL parsing (parser-differential bugs, ReDoS) or
   dynamic-property param lookups (prototype pollution) — stick to the
-  `URL`/`URLSearchParams` API and `Set`/`Map` lookups already in use. See
-  "Security Considerations" in `SPEC.md` for the fuller threat model,
-  including why `redirect-guard.mjs` exists.
+  `URL` API for parsing, the plain `split("&")` walk in `strip.mjs` for
+  the query, and `Set`/`Map` lookups. Keep `cleanUrl` a **single pass**
+  over the query: anything that scans the param list once per tracked
+  name is quadratic and a hostile URL with tens of thousands of distinct
+  `utm_*` names will hang the service worker (this happened; there's a
+  regression test). Don't rebuild the query through `URLSearchParams`
+  either — it re-encodes untouched params (`/`→`%2F`, bare `key`→`key=`)
+  and breaks signed URLs. See "Security Considerations" in `SPEC.md` for
+  the fuller threat model, including why `redirect-guard.mjs` exists.
 - **Icons are pre-generated.** Don't regenerate or modify files in
   `icons/` unless explicitly asked.
 - **Coding style:** prefer clarity over cleverness. This codebase may be
@@ -71,12 +78,30 @@ See `SPEC.md` for the full specification — read it before making changes.
   only — a raw `new URL(url).hostname` call will badge and let the user
   toggle a meaningless pseudo-host instead of the site that actually
   failed.
+- **Navigation events fire for documents the user can't see.**
+  Speculation-rules prerenders and tab-less requests produce the same
+  `onBeforeNavigate` / `onBeforeRedirect` events as a real click. Every
+  listener must go through `isVisibleTopLevelNavigation()` in
+  `background.js` (`tabId >= 0`, `documentLifecycle === "active"`), or a
+  page can make the extension navigate the visible tab on its behalf and
+  badge it with a hidden document's state.
+- **Seed `domainList` by replacing it, never by toggling into it.** The
+  initial `storage.local.get` and the `storage.onChanged` listener can
+  resolve in either order on a cold start (a write from the options page
+  is often what woke the worker). `toggle()` is not idempotent, so seeding
+  with it after `onChanged` already rebuilt the list flips every
+  hostname back off. `domainList = createDomainList(...)` is safe in both
+  orders.
+- **The `tabs` permission is intentionally absent** from `manifest.json`.
+  `<all_urls>` already makes `tab.url` readable and `tabs.update` needs no
+  permission. Don't add it back "to be safe".
 
 ## Extending the strip list
 
-Add new tracking parameters to the `TRACKED_PARAMS` set in `strip.mjs`.
-This should always be a one-line change. Wildcard prefixes (currently
-just `utm_`) live in `TRACKED_PREFIXES`. Add a corresponding case to
+Add new tracking parameters to the `TRACKED_PARAMS` set in `strip.mjs`,
+in lowercase — matching is case-insensitive, and the set is only ever
+probed with lowercased names. This should always be a one-line change.
+Wildcard prefixes (currently just `utm_`) live in `TRACKED_PREFIXES`. Add a corresponding case to
 `test/strip.test.mjs` and to the table in `SPEC.md`.
 
 ## Per-domain disable
@@ -117,16 +142,27 @@ dependencies (Node's test runner is built in) and covers `strip.mjs`
 sleeps — see `test/redirect-guard.test.mjs` for the pattern), and
 `domain-list.mjs` (per-domain disable set). CI runs the
 same command, plus super-linter, on every push and PR
-(`.github/workflows/ci.yml`); both third-party actions there are pinned
+(`.github/workflows/ci.yml`); all third-party actions there are pinned
 to a commit SHA, not a movable tag.
+
+super-linter's JavaScript step reads `.github/linters/eslint.config.mjs`.
+That flat config spells out its globals and rules by hand instead of
+importing `@eslint/js` or the `globals` package, so it resolves inside
+super-linter's image with nothing installed in this repo. It's a real
+rule set (`no-undef`, `no-unused-vars`, `eqeqeq` "smart", `no-eval`,
+…), not just a parse check — if you add a file that uses a new global,
+declare it there or CI fails on `no-undef`.
 
 `pre-commit` (`.pre-commit-config.yaml`) runs a fast subset of this
 locally on every commit once installed (`pre-commit install`): JSON
-validity, `scripts/check-js-syntax.sh`, `node --test`, and the
-no-`package.json` guard. It requires the `pre-commit` tool itself
-(Python/pipx/brew — not an npm package, see README's "Pre-commit hooks"
-section). The `pre-commit-hooks` repo it pulls in is pinned by commit SHA
-in the config, same convention as the GitHub Actions.
+validity, markdownlint, `scripts/check-js-syntax.sh`, `node --test`, and
+the no-package-manager-files guard. It requires the `pre-commit` tool
+itself (Python/pipx/brew — not an npm package, see README's "Pre-commit
+hooks" section). Every remote hook repo it pulls in is pinned by commit
+SHA with a `# frozen: vX.Y.Z` comment, same convention as the GitHub
+Actions. Update them with `pre-commit autoupdate --freeze`, which keeps
+the SHA form; a plain `pre-commit autoupdate` would rewrite them back to
+movable tags.
 
 ## Definition of done
 

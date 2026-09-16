@@ -10,13 +10,28 @@ let domainList = createDomainList();
 // listener awaits this promise before consulting it. It resolves once,
 // almost immediately on a cold start, and immediately after on every
 // subsequent call.
+//
+// The list is *replaced* here, not toggled into. If a storage write from
+// the options page is what woke this worker, the onChanged listener below
+// can run before this read resolves and has already rebuilt domainList
+// from the fresh value; toggling each hostname on top of that would flip
+// them all back off. Replacing is idempotent whichever order they land in.
 const domainListReady = chrome.storage.local
   .get("disabledHostnames")
   .then(({ disabledHostnames }) => {
-    for (const hostname of disabledHostnames ?? []) {
-      domainList.toggle(hostname);
-    }
+    domainList = createDomainList(asHostnameArray(disabledHostnames));
+  })
+  .catch((err) => {
+    // Fail open with an empty list rather than leaving a rejected promise
+    // that would make every navigation handler throw from here on.
+    console.error("[untracked] failed to load disabledHostnames", err);
   });
+
+// Storage is only ever written by this extension, but a corrupted or
+// hand-edited value must not take the whole worker down.
+function asHostnameArray(value) {
+  return Array.isArray(value) ? value : [];
+}
 
 function persistDisabledHostnames() {
   return chrome.storage.local.set({
@@ -44,7 +59,7 @@ function updateBadge(tabId, hostname) {
 
 chrome.tabs.onRemoved.addListener((tabId) => redirectGuard.forget(tabId));
 
-// The options page (options.js) also reads/writes "disabledHostnames"
+// The options page (options.mjs) also reads/writes "disabledHostnames"
 // directly. Without this, background.js's in-memory domainList would go
 // stale as soon as the user re-enables a hostname from that page, and
 // keep skipping stripping for it until the service worker happens to
@@ -52,7 +67,9 @@ chrome.tabs.onRemoved.addListener((tabId) => redirectGuard.forget(tabId));
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local" || !changes.disabledHostnames) return;
 
-  domainList = createDomainList(changes.disabledHostnames.newValue ?? []);
+  domainList = createDomainList(
+    asHostnameArray(changes.disabledHostnames.newValue)
+  );
 
   chrome.tabs.query({}, (tabs) => {
     for (const tab of tabs) {
@@ -61,9 +78,21 @@ chrome.storage.onChanged.addListener((changes, area) => {
   });
 });
 
-async function handleNavigation(tabId, frameId, url) {
-  if (frameId !== 0) return;
+// Both navigation listeners below can also fire for documents the user
+// isn't looking at: prerendered pages (speculation rules) and requests with
+// no tab. Acting on those would navigate the *visible* tab to a page the
+// user never clicked, and badge it with the hidden page's state. Only the
+// active, top-level document of a real tab is ours to touch.
+function isVisibleTopLevelNavigation(details) {
+  if (details.tabId == null || details.tabId < 0) return false;
+  // documentLifecycle is absent on older Chromium; treat absent as active.
+  if (details.documentLifecycle && details.documentLifecycle !== "active") {
+    return false;
+  }
+  return true;
+}
 
+async function handleNavigation(tabId, url) {
   await domainListReady;
 
   const hostname = hostnameOf(url);
@@ -88,7 +117,9 @@ async function handleNavigation(tabId, frameId, url) {
 
 // Handles direct navigations to a URL that already carries tracking params.
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
-  handleNavigation(details.tabId, details.frameId, details.url);
+  if (details.frameId !== 0) return;
+  if (!isVisibleTopLevelNavigation(details)) return;
+  handleNavigation(details.tabId, details.url);
 });
 
 // Handles server-side redirect chains (e.g. newsletter link-tracker
@@ -96,13 +127,15 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
 // only fires for the first URL in the chain, so without this, tracked
 // params introduced partway through a redirect never get caught. This is
 // chrome.webRequest.onBeforeRedirect (observation only, no blocking) —
-// note it's a different API from webNavigation.
+// note it's a different API from webNavigation. The types filter is set
+// at registration so sub-resource redirects (images, scripts, XHR) never
+// wake the worker at all.
 chrome.webRequest.onBeforeRedirect.addListener(
   (details) => {
-    if (details.type !== "main_frame") return;
-    handleNavigation(details.tabId, 0, details.redirectUrl);
+    if (!isVisibleTopLevelNavigation(details)) return;
+    handleNavigation(details.tabId, details.redirectUrl);
   },
-  { urls: ["<all_urls>"] }
+  { urls: ["<all_urls>"], types: ["main_frame"] }
 );
 
 // Toolbar icon click toggles stripping for the current tab's hostname.

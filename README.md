@@ -8,8 +8,17 @@ No UI, no configuration, no telemetry — it just works.
 
 When you navigate to a URL, Untracked checks the query string for known
 tracking parameters. If any are found, it removes them and redirects the
-tab to the cleaned URL before the original page loads — so the tracking
-parameters never reach the destination server.
+tab to the cleaned URL before the original page loads — so the page you
+end up on, your history, and anything you copy or share carry the clean
+URL.
+
+**What it does not guarantee:** the original request is usually already
+on its way to the server by the time the extension reacts, because
+Manifest V3 only lets an extension *observe* navigations, not block
+them. In practice the destination server often sees the tracked request
+briefly, followed by the cleaned one. Untracked stops the tracked URL
+from becoming the page you land on; it does not hide the click from the
+server. See "Security Considerations" in `SPEC.md` for the details.
 
 Example:
 

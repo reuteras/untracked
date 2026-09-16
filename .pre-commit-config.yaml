@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0 # v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
     hooks:
       - id: check-json
       - id: check-merge-conflict
@@ -9,20 +9,20 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.49.1
+    rev: 5b5dddc4fb0f83c3ea1fc5616fa63e115dce83e0 # frozen: v0.49.1
     hooks:
       - id: markdownlint
 
   - repo: local
     hooks:
-      - id: no-package-json
-        name: "block package.json / node_modules (see AGENT.md: no dependencies)"
+      - id: no-package-manager-files
+        name: "block package manifests / lockfiles / node_modules (see AGENT.md: no dependencies)"
         entry: >-
           bash -c 'echo "This project has no dependencies by design (see
-          AGENT.md). Do not add package.json, package-lock.json, or
+          AGENT.md). Do not add package.json, lockfiles, or
           node_modules." && exit 1'
         language: system
-        files: '^(package(-lock)?\.json|node_modules/)'
+        files: '(^|/)(package(-lock)?\.json|npm-shrinkwrap\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb?|deno\.(json|jsonc|lock)|node_modules/)'
 
       - id: js-syntax
         name: node --check (background.js + all .mjs files)
