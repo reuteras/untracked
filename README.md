@@ -80,7 +80,9 @@ to re-share or save afterward.
 4. Add another **Replace Text** action (regex enabled), taking the
    previous step's **Updated Text** as input:
    - Find: `[?&]+$`
-   - Replace: *(leave empty)*
+   - Replace: *(leave empty — on iOS 27+ where the field defaults to
+     "World", type a single space instead; the Open URL action trims
+     trailing whitespace)*
 5. Add another **Replace Text** action (regex enabled), again on the
    previous **Updated Text**, to collapse a leftover `?&` into `?`:
    - Find: `\?&`
