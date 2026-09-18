@@ -74,13 +74,15 @@ to re-share or save afterward.
 2. Add **Receive Apps and URLs from Share Sheet**. Under "If there's no
    input", set it to **Stop and Respond** with something like "No URL".
 3. Add a **Replace Text** action with **Regular Expression** enabled:
-   - Find: `([?&])(utm_[^=]*|fbclid|gclid|gclsrc|msclkid|twclid|mc_cid|mc_eid|_ga|_gl|igshid|li_fat_id|ttclid)=[^&]*`
+   - Find: `([?&])(utm_[^=]*|fbclid|gclid|gclsrc|msclkid|twclid|mc_cid|mc_eid|_ga|_gl|igshid|li_fat_id|ttclid|_bhlid)=[^&]*`
    - Replace: `$1`
    - Input: **Shortcut Input**
 4. Add another **Replace Text** action (regex enabled), taking the
    previous step's **Updated Text** as input:
    - Find: `[?&]+$`
-   - Replace: *(leave empty)*
+   - Replace: *(leave empty — on iOS 27+ where the field defaults to
+     "World", type a single space instead; the Open URL action trims
+     trailing whitespace)*
 5. Add another **Replace Text** action (regex enabled), again on the
    previous **Updated Text**, to collapse a leftover `?&` into `?`:
    - Find: `\?&`
