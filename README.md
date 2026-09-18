@@ -74,24 +74,28 @@ to re-share or save afterward.
 2. Add **Receive Apps and URLs from Share Sheet**. Under "If there's no
    input", set it to **Stop and Respond** with something like "No URL".
 3. Add a **Replace Text** action with **Regular Expression** enabled:
-   - Find: `([?&])(utm_[^=]*|fbclid|gclid|gclsrc|msclkid|twclid|mc_cid|mc_eid|_ga|_gl|igshid|li_fat_id|ttclid|_bhlid)=[^&]*`
+   - Find: `([?&])utm_[^=]*=[^&]*`
    - Replace: `$1`
    - Input: **Shortcut Input**
 4. Add another **Replace Text** action (regex enabled), taking the
+   previous step's **Updated Text** as input:
+   - Find: `([?&])(fbclid|gclid|gclsrc|msclkid|twclid|mc_cid|mc_eid|_ga|_gl|igshid|li_fat_id|ttclid|_bhlid)=[^&]*`
+   - Replace: `$1`
+5. Add another **Replace Text** action (regex enabled), taking the
    previous step's **Updated Text** as input:
    - Find: `[?&]+$`
    - Replace: *(leave empty — on iOS 27+ where the field defaults to
      "World", type a single space instead; the Open URL action trims
      trailing whitespace)*
-5. Add another **Replace Text** action (regex enabled), again on the
+6. Add another **Replace Text** action (regex enabled), again on the
    previous **Updated Text**, to collapse a leftover `?&` into `?`:
    - Find: `\?&`
    - Replace: `?`
-6. Add an **Open URL** action with the cleaned result — for example
+7. Add an **Open URL** action with the cleaned result — for example
    `readwise://reader/add?url=[Replace Text Result]` to send it straight
    to Readwise Reader, or just use the **Updated Text** value directly to
    reopen the cleaned link in Safari.
-7. In the shortcut's settings (the ⓘ icon), enable **Show in Share
+8. In the shortcut's settings (the ⓘ icon), enable **Show in Share
    Sheet** so it's offered whenever you share a URL from Safari or
    another app.
 
